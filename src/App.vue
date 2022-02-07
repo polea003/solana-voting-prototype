@@ -6,7 +6,11 @@
       <div v-if='!election && walletAddress' @click='createElectionAccount' class='bg-green-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Create Election</div>
       <div v-if='election && walletAddress' @click='vote(1)' class='bg-blue-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Vote for Candidate 1</div>
       <div v-if='election && walletAddress' @click='vote(2)' class='bg-red-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Vote for Candidate 2</div>
-      <div v-for='vote in election' :key='vote'>{{vote}}</div>
+      <div v-for='(vote, index) in election' :key='vote'
+        class='bg-green-400 p-2 bg-opacity-60'
+      >
+      {{`Vote ${index + 1}: Candidate ${vote.selection} by ${vote.userAddress}`}}
+      </div>
 
     </div>
   </div>
