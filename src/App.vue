@@ -1,7 +1,8 @@
 <template>
-  <div class="w-screen h-screen bg-gray-700 text-white">
+  <div class="w-screen h-screen bg-gray-700 text-white font-bold">
     <div class='flex flex-col space-y-4'>
       <div>Voting Project Prototype</div>
+      <div @click='connectWallet' class='bg-yellow-500 p-2 cursor-pointer'>Connect Wallet</div>
       <div class='bg-green-500 p-2'>Create Election</div>
       <div class='bg-blue-500 p-2'>Vote for Candidate 1</div>
       <div class='bg-red-500 p-2'>Vote for Candidate 2</div>
@@ -35,12 +36,28 @@ export default {
         if (solana) {
           if (solana.isPhantom) {
             console.log('Phantom wallet found!');
+            // Logic to Connect Automatically if wallet trusts the site
+            // Instead we will make a user connect their wallet everytime
+            // const response = await solana.connect({ onlyIfTrusted: true });
+            // console.log(
+            //   'Automaticlly Connected with Public Key:',
+            //   response.publicKey.toString()
+            // );
+            // this.walletAddress = response.publicKey.toString();
           }
         } else {
           alert('Solana object not found! Get a Phantom Wallet 👻');
         }
       } catch (error) {
         console.error(error);
+      }
+    },
+    async connectWallet () {
+      const { solana } = window;
+      if (solana) {
+        const response = await solana.connect();
+        console.log('Sucessfully Connected with Public Key:', response.publicKey.toString());
+        this.walletAddress = response.publicKey.toString();
       }
     }
   }
