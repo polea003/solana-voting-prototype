@@ -30,15 +30,18 @@ const main = async() => {
   console.log('👀 Vote Count', account.totalVotes.toString())
 
   // Call add_vote!
-  await program.rpc.addVote({
+  await program.rpc.addVote(1, {
     accounts: {
       baseAccount: baseAccount.publicKey,
+      user: provider.wallet.publicKey,
     },
   });
 
   // Get the account again to see what changed.
   account = await program.account.baseAccount.fetch(baseAccount.publicKey);
   console.log('👀 Vote Count', account.totalVotes.toString())
+
+  console.log('👀 Votes', account.votes)
 }
 
 const runMain = async () => {
