@@ -2,16 +2,37 @@
   <div class="w-screen h-screen bg-gray-700 text-white font-bold">
     <div class='flex flex-col space-y-4'>
       <div>Voting Project Prototype</div>
-      <div @click='connectWallet' class='bg-yellow-500 p-2 cursor-pointer'>Connect Wallet</div>
-      <div class='bg-green-500 p-2'>Create Election</div>
-      <div class='bg-blue-500 p-2'>Vote for Candidate 1</div>
-      <div class='bg-red-500 p-2'>Vote for Candidate 2</div>
+      <div v-if='!walletAddress' @click='connectWallet' class='bg-yellow-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Connect Wallet</div>
+      <div v-if='!election && walletAddress' @click='createElectionAccount' class='bg-green-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Create Election</div>
+      <div v-if='election && walletAddress' @click='vote(1)' class='bg-blue-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Vote for Candidate 1</div>
+      <div v-if='election && walletAddress' @click='vote(2)' class='bg-red-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Vote for Candidate 2</div>
+      <div v-for='vote in election' :key='vote'>{{vote}}</div>
 
     </div>
   </div>
 </template>
 
 <script>
+import idl from './anchor_client.json';
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { Program, Provider, web3 } from '@project-serum/anchor';
+
+// SystemProgram is a reference to the Solana runtime!
+const { SystemProgram, Keypair } = web3;
+
+// Create a keypair for the account that will hold the GIF data.
+let baseAccount = Keypair.generate();
+
+// Get our program's id from the IDL file.
+const programID = new PublicKey(idl.metadata.address);
+
+// Set our network to devnet.
+const network = clusterApiUrl('devnet');
+
+// Controls how we want to acknowledge when a transaction is "done".
+const opts = {
+  preflightCommitment: "processed"
+}
 
 export default {
   name: 'App',
@@ -59,6 +80,61 @@ export default {
         console.log('Sucessfully Connected with Public Key:', response.publicKey.toString());
         this.walletAddress = response.publicKey.toString();
       }
+    },
+    getProvider () {
+      const connection = new Connection(network, opts.preflightCommitment);
+      const provider = new Provider(
+        connection, window.solana, opts.preflightCommitment,
+      );
+      return provider;
+    },
+    async getElection () {
+      try {
+        const provider = this.getProvider();
+        const program = new Program(idl, programID, provider);
+        const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+        
+        console.log("Got the account", account)
+        this.election = [...account.votes]
+      } catch (error) {
+        console.log("Error in getElection: ", error)
+        this.election = null;
+      }
+    },
+    async createElectionAccount() {
+      try {
+        const provider = this.getProvider();
+        const program = new Program(idl, programID, provider);
+        console.log("ping")
+        await program.rpc.initialize({
+          accounts: {
+            baseAccount: baseAccount.publicKey,
+            user: provider.wallet.publicKey,
+            systemProgram: SystemProgram.programId,
+          },
+          signers: [baseAccount]
+        });
+        console.log("Created a new BaseAccount w/ address:", baseAccount.publicKey.toString())
+        await this.getElection();
+      } catch(error) {
+        console.log("Error creating BaseAccount account:", error)
+      }
+    },
+    async vote (selection) {
+        try {
+          const provider = this.getProvider();
+          const program = new Program(idl, programID, provider);
+          await program.rpc.addVote(selection, {
+            accounts: {
+              baseAccount: baseAccount.publicKey,
+              user: provider.wallet.publicKey,
+            },
+          });
+          console.log("Vote successfully sent to program:", 'selection =', selection )
+          await this.getElection();
+        } catch (error) {
+          console.log("Error sending Vote:", error)
+        }   
     }
   }
 
