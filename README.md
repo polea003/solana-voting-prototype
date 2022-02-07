@@ -1,24 +1,11 @@
-# voting-prototype
+# Solana Voting Prototype
 
-## Project setup
-```
-npm install
-```
+![](screenshot.png)
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## The idea 💡
 
-### Compiles and minifies for production
-```
-npm run build
-```
+Read/Write votes to the solana blockchain using anchor and Vue.JS frontend
 
-### Lints and fixes files
-```
-npm run lint
-```
+## How To
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Review commits for clear steps
