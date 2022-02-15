@@ -1,15 +1,16 @@
 <template>
-  <div class="w-screen h-screen bg-gray-700 text-white font-bold">
+  <div class="w-screen h-screen bg-pink-200 text-white font-bold">
     <div class='flex flex-col space-y-4'>
-      <div>Voting Project Prototype</div>
+      <div class="text-red-600 text-2xl pt-10">Sophia, will you be my valentine?!?</div>
       <div v-if='!walletAddress' @click='connectWallet' class='bg-yellow-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Connect Wallet</div>
-      <div v-if='!election && walletAddress' @click='createElectionAccount' class='bg-green-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Create Election</div>
-      <div v-if='election && walletAddress' @click='vote(1)' class='bg-blue-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Vote for Candidate 1</div>
-      <div v-if='election && walletAddress' @click='vote(2)' class='bg-red-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Vote for Candidate 2</div>
-      <div v-for='(vote, index) in election' :key='vote'
-        class='bg-green-400 p-2 bg-opacity-60'
-      >
-      {{`Vote ${index + 1}: Candidate ${vote.selection} by ${vote.userAddress}`}}
+      <div v-if='!election && walletAddress' @click='createElectionAccount' class='bg-green-500 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100'>Create Valentine</div>
+      <div v-if='election && walletAddress && election.length === 0' @click='vote(1)' class='bg-red-600 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100 text-gray-100'>Yes</div>
+      <div v-if='election && walletAddress && election.length === 0' @click='vote(2)' class='bg-blue-400 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100 text-gray-100'>No</div>
+      <div v-if='election && walletAddress && election.length === 0' @click='vote(3)' class='bg-purple-400 p-2 cursor-pointer bg-opacity-90 hover:bg-opacity-100 text-gray-100'>Maybe?</div>
+      <div v-if='election && election.length > 0' class="text-red-600 text-2xl pt-10 flex flex-col items-center">
+        <div><img src='https://media.giphy.com/media/S6YrEsT1Q0GIwziT9W/giphy.gif' /></div>  
+        <div>{{`VALENTINE RESPONSE: 💖💖💖 \"${message}\" 💖💖💖`}}</div>
+        <div>{{`from crypto wallet ${election[0].userAddress} on Solana account ${baseAccountKey}`}}</div>
       </div>
 
     </div>
@@ -52,6 +53,22 @@ export default {
     window.addEventListener('load', onLoad);
     return () => window.removeEventListener('load', onLoad);
 
+  },
+  computed: {
+    message () {
+      switch (this.election[0].selection) {
+        case 1:
+          return 'YES!'
+        case 2:
+          return 'NO WAY'
+        case 3:
+          return 'MAYBE??'
+      }
+      return ''
+    },
+    baseAccountKey () {
+      return baseAccount.publicKey
+    }
   },
   data () {
     return {
